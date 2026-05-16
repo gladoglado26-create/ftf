@@ -3,9 +3,11 @@ package com.socialplatform.config
 import com.socialplatform.auth.AuthService
 import com.socialplatform.bots.BotEngine
 import com.socialplatform.cache.RedisCache
+import com.socialplatform.cache.NoOpRedisCache
 import com.socialplatform.calls.CallService
 import com.socialplatform.chat.ChatService
 import com.socialplatform.events.EventBus
+import com.socialplatform.events.NoOpEventBus
 import com.socialplatform.notifications.NotificationService
 import com.socialplatform.posts.PostService
 import com.socialplatform.realtime.WebSocketHub
@@ -21,8 +23,8 @@ fun Application.configureKoin(config: AppConfig) {
         slf4jLogger()
         modules(module {
             single { config }
-            single { RedisCache(config.redis) }
-            single { EventBus(config.rabbit) }
+            single { config.redis?.let { RedisCache(it) } ?: NoOpRedisCache() }
+            single { config.rabbit?.let { EventBus(it) } ?: NoOpEventBus() }
             single { WebSocketHub(get(), get()) }
             single { AuthService(config, get()) }
             single { UserService(get(), get()) }

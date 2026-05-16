@@ -12,10 +12,16 @@ import java.util.UUID
 
 @Serializable data class DomainEvent(val id: String = UUID.randomUUID().toString(), val name: String, val actorId: String? = null, val payload: String = "{}", val occurredAt: String = Instant.now().toString())
 
-class EventBus(config: AppConfig.Rabbit) {
+open class EventBus(config: AppConfig.Rabbit) {
     private val exchange = config.exchange
-    private val connection = runCatching { ConnectionFactory().apply { setUri(config.uri) }.newConnection("social-platform-api") }.getOrNull()
-    fun publish(name: String, actorId: String? = null, payload: String = "{}") {
+    private val connection = try {
+        ConnectionFactory().apply { setUri(config.uri) }.newConnection("social-platform-api")
+    } catch (e: Exception) {
+        println("Failed to connect to RabbitMQ: ${e.message}")
+        null
+    }
+    open fun publish(name: String, actorId: String? = null, payload: String = "{}") {
+        if (connection == null) { return }
         val body = Json.encodeToString(DomainEvent(name = name, actorId = actorId, payload = payload)).toByteArray()
         runCatching {
             connection?.createChannel()?.use { ch ->
@@ -24,8 +30,9 @@ class EventBus(config: AppConfig.Rabbit) {
             }
         }
     }
-    fun consume(queue: String, bindingKeys: List<String>, handler: (DomainEvent) -> Unit) {
+    open fun consume(queue: String, bindingKeys: List<String>, handler: (DomainEvent) -> Unit) {
         val conn = connection ?: return
+        println("Attempting to consume from RabbitMQ queue: $queue with binding keys: $bindingKeys")
         val ch = conn.createChannel()
         ch.exchangeDeclare(exchange, "topic", true)
         ch.queueDeclare(queue, true, false, false, null)

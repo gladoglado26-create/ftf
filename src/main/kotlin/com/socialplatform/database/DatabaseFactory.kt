@@ -9,26 +9,35 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 object DatabaseFactory {
     fun init(config: AppConfig.Database) {
-        // Railway provides DATABASE_URL in the format: postgresql://user:pass@host:port/db
+        // Railway/Supabase often provide a full DATABASE_URL: postgresql://user:pass@host:port/db
         // Hikari/JDBC needs: jdbc:postgresql://host:port/db
         val rawUrl = System.getenv("DATABASE_URL") ?: System.getenv("DB_URL") ?: config.jdbcUrl
         
-        val jdbcUrl = if (rawUrl.startsWith("postgresql://")) {
-            rawUrl.replace("postgresql://", "jdbc:postgresql://")
-        } else {
-            rawUrl
+        // If the URL contains credentials (user:pass@), Hikari might struggle if we also provide user/pass separately.
+        // Also, we must convert postgresql:// to jdbc:postgresql://
+        val jdbcUrl = when {
+            rawUrl.startsWith("postgresql://") -> rawUrl.replace("postgresql://", "jdbc:postgresql://")
+            rawUrl.startsWith("postgres://") -> rawUrl.replace("postgres://", "jdbc:postgresql://")
+            else -> rawUrl
         }
 
-        val dbUser = System.getenv("DATABASE_USER") ?: System.getenv("DB_USER") ?: config.username
-        val dbPass = System.getenv("DATABASE_PASSWORD") ?: System.getenv("DB_PASSWORD") ?: config.password
+        // If the URL already contains the username/password, we should NOT set them again in HikariConfig
+        // as it can cause "UnknownHostException" if the driver tries to parse the credentials as part of the host.
+        val hasCredentialsInUrl = jdbcUrl.contains("@") && jdbcUrl.startsWith("jdbc:postgresql://")
 
         println("Initializing database connection...")
-        println("JDBC URL: ${jdbcUrl.take(25)}...") // Log partial URL for safety
+        println("JDBC URL detected (masked): ${jdbcUrl.take(20)}...") 
 
         val hikari = HikariConfig().apply {
             this.jdbcUrl = jdbcUrl
-            this.username = dbUser
-            this.password = dbPass
+            
+            if (!hasCredentialsInUrl) {
+                this.username = System.getenv("DATABASE_USER") ?: System.getenv("DB_USER") ?: config.username
+                this.password = System.getenv("DATABASE_PASSWORD") ?: System.getenv("DB_PASSWORD") ?: config.password
+            } else {
+                println("Credentials detected in URL, skipping separate user/pass configuration.")
+            }
+
             this.maximumPoolSize = config.poolSize
             this.driverClassName = "org.postgresql.Driver"
             

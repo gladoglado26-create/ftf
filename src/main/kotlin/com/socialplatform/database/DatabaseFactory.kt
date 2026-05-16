@@ -9,35 +9,41 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 object DatabaseFactory {
     fun init(config: AppConfig.Database) {
-        // Railway/Supabase often provide a full DATABASE_URL: postgresql://user:pass@host:port/db
-        // Hikari/JDBC needs: jdbc:postgresql://host:port/db
         val rawUrl = System.getenv("DATABASE_URL") ?: System.getenv("DB_URL") ?: config.jdbcUrl
         
-        // If the URL contains credentials (user:pass@), Hikari might struggle if we also provide user/pass separately.
-        // Also, we must convert postgresql:// to jdbc:postgresql://
-        val jdbcUrl = when {
-            rawUrl.startsWith("postgresql://") -> rawUrl.replace("postgresql://", "jdbc:postgresql://")
-            rawUrl.startsWith("postgres://") -> rawUrl.replace("postgres://", "jdbc:postgresql://")
-            else -> rawUrl
+        var finalJdbcUrl = rawUrl
+        var finalUser = System.getenv("DATABASE_USER") ?: System.getenv("DB_USER") ?: config.username
+        var finalPass = System.getenv("DATABASE_PASSWORD") ?: System.getenv("DB_PASSWORD") ?: config.password
+
+        // Manual parsing for postgresql://user:pass@host:port/db
+        if (rawUrl.startsWith("postgresql://") || rawUrl.startsWith("postgres://")) {
+            try {
+                val cleanUrl = rawUrl.substringAfter("://")
+                if (cleanUrl.contains("@")) {
+                    val credentials = cleanUrl.substringBefore("@")
+                    val hostPart = cleanUrl.substringAfter("@")
+                    
+                    finalUser = credentials.substringBefore(":")
+                    finalPass = credentials.substringAfter(":")
+                    finalJdbcUrl = "jdbc:postgresql://$hostPart"
+                    
+                    println("Manually parsed credentials from DATABASE_URL.")
+                } else {
+                    finalJdbcUrl = "jdbc:postgresql://$cleanUrl"
+                }
+            } catch (e: Exception) {
+                println("Failed to manually parse DATABASE_URL, falling back to simple replacement: ${e.message}")
+                finalJdbcUrl = rawUrl.replace("postgresql://", "jdbc:postgresql://").replace("postgres://", "jdbc:postgresql://")
+            }
         }
 
-        // If the URL already contains the username/password, we should NOT set them again in HikariConfig
-        // as it can cause "UnknownHostException" if the driver tries to parse the credentials as part of the host.
-        val hasCredentialsInUrl = jdbcUrl.contains("@") && jdbcUrl.startsWith("jdbc:postgresql://")
-
         println("Initializing database connection...")
-        println("JDBC URL detected (masked): ${jdbcUrl.take(20)}...") 
+        println("Final JDBC URL (masked): ${finalJdbcUrl.take(30)}...") 
 
         val hikari = HikariConfig().apply {
-            this.jdbcUrl = jdbcUrl
-            
-            if (!hasCredentialsInUrl) {
-                this.username = System.getenv("DATABASE_USER") ?: System.getenv("DB_USER") ?: config.username
-                this.password = System.getenv("DATABASE_PASSWORD") ?: System.getenv("DB_PASSWORD") ?: config.password
-            } else {
-                println("Credentials detected in URL, skipping separate user/pass configuration.")
-            }
-
+            this.jdbcUrl = finalJdbcUrl
+            this.username = finalUser
+            this.password = finalPass
             this.maximumPoolSize = config.poolSize
             this.driverClassName = "org.postgresql.Driver"
             

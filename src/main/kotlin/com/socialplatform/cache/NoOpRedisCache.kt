@@ -1,5 +1,6 @@
 package com.socialplatform.cache
 
+import com.socialplatform.config.AppConfig
 import kotlin.time.Duration
 
 class NoOpRedisCache : RedisCache(config = AppConfig.Redis(url = "")) {

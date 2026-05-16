@@ -1,0 +1,46 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.9/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :clean
+> Task :checkKotlinGradlePluginConfigurationErrors
+> Task :processResources
+> Task :processTestResources NO-SOURCE
+
+> Task :compileKotlin
+w: file:///home/ubuntu/social-platform-backend/src/main/kotlin/com/socialplatform/Application.kt:25:47 This declaration needs opt-in. Its usage should be marked with '@kotlinx.serialization.ExperimentalSerializationApi' or '@OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)'
+w: file:///home/ubuntu/social-platform-backend/src/main/kotlin/com/socialplatform/bots/BotEngine.kt:28:40 'select(SqlExpressionBuilder.() -> Op<Boolean>): Query' is deprecated. As part of SELECT DSL design changes, this will be removed in future releases.
+w: file:///home/ubuntu/social-platform-backend/src/main/kotlin/com/socialplatform/calls/CallService.kt:21:125 'select(SqlExpressionBuilder.() -> Op<Boolean>): Query' is deprecated. As part of SELECT DSL design changes, this will be removed in future releases.
+w: file:///home/ubuntu/social-platform-backend/src/main/kotlin/com/socialplatform/chat/ChatService.kt:19:75 'select(SqlExpressionBuilder.() -> Op<Boolean>): Query' is deprecated. As part of SELECT DSL design changes, this will be removed in future releases.
+w: file:///home/ubuntu/social-platform-backend/src/main/kotlin/com/socialplatform/chat/ChatService.kt:25:37 Parameter 'before' is never used
+w: file:///home/ubuntu/social-platform-backend/src/main/kotlin/com/socialplatform/chat/ChatService.kt:25:75 'select(SqlExpressionBuilder.() -> Op<Boolean>): Query' is deprecated. As part of SELECT DSL design changes, this will be removed in future releases.
+w: file:///home/ubuntu/social-platform-backend/src/main/kotlin/com/socialplatform/notifications/NotificationService.kt:16:58 'select(SqlExpressionBuilder.() -> Op<Boolean>): Query' is deprecated. As part of SELECT DSL design changes, this will be removed in future releases.
+w: file:///home/ubuntu/social-platform-backend/src/main/kotlin/com/socialplatform/posts/PostService.kt:21:169 'select(SqlExpressionBuilder.() -> Op<Boolean>): Query' is deprecated. As part of SELECT DSL design changes, this will be removed in future releases.
+w: file:///home/ubuntu/social-platform-backend/src/main/kotlin/com/socialplatform/posts/PostService.kt:22:43 'select(SqlExpressionBuilder.() -> Op<Boolean>): Query' is deprecated. As part of SELECT DSL design changes, this will be removed in future releases.
+w: file:///home/ubuntu/social-platform-backend/src/main/kotlin/com/socialplatform/posts/PostService.kt:24:49 'select(SqlExpressionBuilder.() -> Op<Boolean>): Query' is deprecated. As part of SELECT DSL design changes, this will be removed in future releases.
+w: file:///home/ubuntu/social-platform-backend/src/main/kotlin/com/socialplatform/posts/PostService.kt:27:47 'select(SqlExpressionBuilder.() -> Op<Boolean>): Query' is deprecated. As part of SELECT DSL design changes, this will be removed in future releases.
+w: file:///home/ubuntu/social-platform-backend/src/main/kotlin/com/socialplatform/posts/PostService.kt:29:79 'select(SqlExpressionBuilder.() -> Op<Boolean>): Query' is deprecated. As part of SELECT DSL design changes, this will be removed in future releases.
+w: file:///home/ubuntu/social-platform-backend/src/main/kotlin/com/socialplatform/posts/PostService.kt:34:59 'select(SqlExpressionBuilder.() -> Op<Boolean>): Query' is deprecated. As part of SELECT DSL design changes, this will be removed in future releases.
+w: file:///home/ubuntu/social-platform-backend/src/main/kotlin/com/socialplatform/realtime/Realtime.kt:15:35 Parameter 'config' is never used
+w: file:///home/ubuntu/social-platform-backend/src/main/kotlin/com/socialplatform/users/UserService.kt:30:25 'select(SqlExpressionBuilder.() -> Op<Boolean>): Query' is deprecated. As part of SELECT DSL design changes, this will be removed in future releases.
+w: file:///home/ubuntu/social-platform-backend/src/main/kotlin/com/socialplatform/users/UserService.kt:36:32 'select(SqlExpressionBuilder.() -> Op<Boolean>): Query' is deprecated. As part of SELECT DSL design changes, this will be removed in future releases.
+w: file:///home/ubuntu/social-platform-backend/src/main/kotlin/com/socialplatform/users/UserService.kt:50:53 'select(SqlExpressionBuilder.() -> Op<Boolean>): Query' is deprecated. As part of SELECT DSL design changes, this will be removed in future releases.
+w: file:///home/ubuntu/social-platform-backend/src/main/kotlin/com/socialplatform/users/UserService.kt:72:57 'select(SqlExpressionBuilder.() -> Op<Boolean>): Query' is deprecated. As part of SELECT DSL design changes, this will be removed in future releases.
+w: file:///home/ubuntu/social-platform-backend/src/main/kotlin/com/socialplatform/users/UserService.kt:75:57 'select(SqlExpressionBuilder.() -> Op<Boolean>): Query' is deprecated. As part of SELECT DSL design changes, this will be removed in future releases.
+
+> Task :compileJava NO-SOURCE
+> Task :classes
+> Task :jar
+> Task :startScripts
+> Task :installDist
+> Task :compileTestKotlin
+> Task :compileTestJava NO-SOURCE
+> Task :testClasses UP-TO-DATE
+> Task :test
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.9/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 23s
+9 actionable tasks: 9 executed

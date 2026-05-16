@@ -7,6 +7,10 @@ plugins {
     id("io.ktor.plugin") version "2.3.12"
 }
 
+kotlin {
+    jvmToolchain(17)
+}
+
 group = "com.socialplatform"
 version = "1.0.0"
 
@@ -64,9 +68,5 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter:1.19.8")
 }
 
-tasks.withType<KotlinCompile> { kotlinOptions.jvmTarget = "17" }
-tasks.withType<JavaCompile> {
-    sourceCompatibility = "17"
-    targetCompatibility = "17"
-}
+// Toolchain handles compatibility automatically
 tasks.test { useJUnitPlatform() }

@@ -2,7 +2,7 @@ package com.socialplatform.cache
 
 import kotlin.time.Duration
 
-class NoOpRedisCache : RedisCache(url = "") {
+class NoOpRedisCache : RedisCache(config = AppConfig.Redis(url = "")) {
     override fun get(key: String): String? = null
     override fun set(key: String, value: String, ttl: Duration?) {}
     override fun del(key: String) {}

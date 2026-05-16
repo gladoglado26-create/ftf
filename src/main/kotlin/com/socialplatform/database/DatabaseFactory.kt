@@ -9,20 +9,47 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 object DatabaseFactory {
     fun init(config: AppConfig.Database) {
-        val dbUrl = System.getenv("DB_URL")?.trim() ?: config.jdbcUrl
-        val dbUser = System.getenv("DB_USER")?.trim() ?: config.username
-        val dbPass = System.getenv("DB_PASSWORD")?.trim() ?: config.password
+        // Railway provides DATABASE_URL in the format: postgresql://user:pass@host:port/db
+        // Hikari/JDBC needs: jdbc:postgresql://host:port/db
+        val rawUrl = System.getenv("DATABASE_URL") ?: System.getenv("DB_URL") ?: config.jdbcUrl
+        
+        val jdbcUrl = if (rawUrl.startsWith("postgresql://")) {
+            rawUrl.replace("postgresql://", "jdbc:postgresql://")
+        } else {
+            rawUrl
+        }
+
+        val dbUser = System.getenv("DATABASE_USER") ?: System.getenv("DB_USER") ?: config.username
+        val dbPass = System.getenv("DATABASE_PASSWORD") ?: System.getenv("DB_PASSWORD") ?: config.password
+
+        println("Initializing database connection...")
+        println("JDBC URL: ${jdbcUrl.take(25)}...") // Log partial URL for safety
 
         val hikari = HikariConfig().apply {
-            jdbcUrl = dbUrl
-            username = dbUser
-            password = dbPass
-            maximumPoolSize = config.poolSize
-            driverClassName = "org.postgresql.Driver"
+            this.jdbcUrl = jdbcUrl
+            this.username = dbUser
+            this.password = dbPass
+            this.maximumPoolSize = config.poolSize
+            this.driverClassName = "org.postgresql.Driver"
+            
+            // Railway/Supabase often require SSL
             addDataSourceProperty("sslmode", "require")
+            
+            // Connection timeout and validation
+            connectionTimeout = 30000
+            idleTimeout = 600000
+            maxLifetime = 1800000
+            
             validate()
         }
-        Database.connect(HikariDataSource(hikari))
+        
+        try {
+            Database.connect(HikariDataSource(hikari))
+            println("Database connection established successfully.")
+        } catch (e: Exception) {
+            println("Failed to connect to database: ${e.message}")
+            throw e
+        }
         transaction {
             SchemaUtils.createMissingTablesAndColumns(
                 Users, Follows, Blocks, Posts, Stories, Likes, Saves, Comments,
